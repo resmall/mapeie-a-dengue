@@ -1,19 +1,30 @@
 <?php 
 require('../../autoload.php');
+// usando o autload do composer, facil, pratico e carrega nossos
+// pacotes, uma beleza
+require __DIR__ .'/../../vendor/autoload.php';
+
+
 use App\Dengue\Location\Location;
 use App\Dengue\Location\LocationFactory;
-//include('../../app/classes/Location.php');
+
+
+// Auth Facebook
+use OAuth\OAuth2\Service\Facebook;
+use OAuth\Common\Storage\Session;
+use OAuth\Common\Consumer\Credentials;
 
 
 // initialize
 $row['message'] = '';
 
-//$a = new Location(1,2);
-//echo "Lati:". $a->getLatitude();
-
 $location = new LocationFactory();
 $location = $location->getLocationObject($_POST['lng'], $_POST['lat']);
-//validando o input, por segurança
+
+
+$storage = new Session();
+
+
 if(is_null($location)) {
     $row['message'] = "Dados incorretos";
 } else {
