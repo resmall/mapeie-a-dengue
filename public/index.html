@@ -23,6 +23,9 @@
                 mapOptions);
 
                 google.maps.event.addListener(map, 'click', function(e) {
+                    // 1 - tenta salvar no banco de dados e verifica se já 
+                    //     excedeu o limite, retorna erro caso positivo.
+                    // 2 - se conseguiu salvar no banco de dados, adiciona o marcador.
                     placeMarker(e.latLng, map);
                     saveToDatabase(e.latLng.lat(), e.latLng.lng());
                     //alert(e.latLng.lat());
