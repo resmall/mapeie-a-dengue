@@ -3,7 +3,7 @@ require('../../autoload.php');
 // usando o autload do composer, facil, pratico e carrega nossos
 // pacotes, uma beleza
 require __DIR__ .'/../../vendor/autoload.php';
-
+define("ALLOWED_MARKS_PER_USER", 3);
 
 use App\Dengue\Location\Location;
 use App\Dengue\Location\LocationFactory;
@@ -18,11 +18,16 @@ use OAuth\Common\Consumer\Credentials;
 // initialize
 $row['message'] = '';
 
+//tratar
+
+$username = $_POST['username'];
+
+//echo json_encode($username);
+//exit();
+
 $location = new LocationFactory();
 $location = $location->getLocationObject($_POST['lng'], $_POST['lat']);
 
-
-$storage = new Session();
 
 
 if(is_null($location)) {
@@ -31,29 +36,38 @@ if(is_null($location)) {
 
     try {
         $mysqli = new mysqli("localhost", "homestead", "secret", "dengue");
-        $result = $mysqli->query("SELECT id FROM dengue WHERE username = 'tiago'");
+
+        if (mysqli_connect_errno()) {
+            $row['message'] = "Houve uma falha na conexão, seguem detalhes.". mysqli_connect_error();
+            echo json_encode($row['message']);
+            exit();
+        }
+
+        // Apesar dos dados do usuário vierm do facebook, não custa sanitizar 
+        $username = $mysqli->real_escape_string($username);
+        $result = $mysqli->query("SELECT id FROM dengue WHERE username = '$username'" );
+
     } catch(mysqli_sql_exception $e) {
         throw $e; 
     }
 
-        
-    if ($result->num_rows <= 3 ) {
-        // pode gravar
-        // gravarLocalizacao()
-        $row['message'] = 'Não Tem';
+    if(!$result) {
+        $row['message'] = "Erro ao tentar: \n". $mysqli->error; //$mysqli->sqlstate;
+
+    } elseif($result->num_rows < ALLOWED_MARKS_PER_USER ) {  // psr-2
         $result = $mysqli->query(
             "INSERT INTO dengue (username, lng, lat) 
-            VALUES (
-                'tiago',".
-                 $location->getLongitude() .",".
-                 $location->getLatitude() .");"
-                /*$location->getLongitude()*/
-                /*$location->getLatitude() */ 
-        
+            VALUES ('".
+                $username ."',".
+                $location->getLongitude() .",".
+                $location->getLatitude() .");"        
         );
 
-        if($result == false)
-            $row['message'] = "Falha, tente mais tarde";
+        if(!$result) {
+            $row['message'] = "Ocorreu uma falha durante o processo de gravação";
+        } else {
+            $row['message'] = 'Gravação realizada com sucesso.';
+        }
     } else {
         // não pode gravar
         $row['message'] = "Você adicionou o máximo de marcações possíveis para a sua conta.";
@@ -61,6 +75,7 @@ if(is_null($location)) {
 }
 
 //echo htmlentities($row['_message']);
+header('Content-Type: application/json');
 echo json_encode($row);
 
 // verifica se a pessoa já marcou 3 spots

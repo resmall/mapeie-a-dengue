@@ -1,6 +1,6 @@
 <?php namespace App\Dengue\Location;
 
-use App\Dengue\Validator\Validator;
+use App\Dengue\Validator\LocationValidator;
 
 
 // usando o design pattern factory *yay*
@@ -13,7 +13,7 @@ class LocationFactory
     // recebe esses parametros do input post
     // TODO: Não precisa ser estático, coisa de preguiçoso, mudar.
     public function getLocationObject($long, $lat) {
-        $v = new Validator([$long, $lat]);
+        $v = new LocationValidator([$long, $lat]);
         if( $v->validationPasses() ) {
             $locationObject = new Location($long, $lat);
             return $locationObject;

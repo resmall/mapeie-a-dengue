@@ -2,7 +2,7 @@
 
 //use App\Dengue\Validator;
 
-class Validator implements ValidatorInterface 
+class LocationValidator implements ValidatorInterface 
 {
 
     private $validationFailed = false;  // bool
