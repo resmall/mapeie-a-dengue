@@ -9,12 +9,6 @@ use App\Dengue\Location\Location;
 use App\Dengue\Location\LocationFactory;
 
 
-// Auth Facebook
-use OAuth\OAuth2\Service\Facebook;
-use OAuth\Common\Storage\Session;
-use OAuth\Common\Consumer\Credentials;
-
-
 // initialize
 $return_message['message'] = '';
 $return_message['status'] = 'error';
@@ -28,8 +22,6 @@ $username = $_POST['username'];
 
 $location = new LocationFactory();
 $location = $location->getLocationObject($_POST['lng'], $_POST['lat']);
-
-
 
 if(is_null($location)) {
     $return_message['message'] = "Dados incorretos";

@@ -1,17 +1,22 @@
-var dosom = function(e, map) {
-    return function(response) {
-        console.log(response.status + " " + e.latLng + " mapa? " + map);
-    };
-}
-
 function initialize() {
     var mapOptions = {
-        zoom: 15,
+        zoom: 18,
         center: new google.maps.LatLng(-28.2898836,-53.4998947)
     };
 
-    var map = new google.maps.Map(document.getElementById('map-canvas'),
-    mapOptions);
+    var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+    $.post("src/getMarkers.php")
+    .done(function(data) {
+        var obj = data; //JSON.parse(data);
+        for(var i = 0; i < obj.length; i++) {
+            var position = new google.maps.LatLng(obj[i].lat, obj[i].lng); //3 param bool
+            placeMarker(position, map);
+        }
+    })
+    .fail(function() {
+        alert("error");
+    });
 
     google.maps.event.addListener(map, 'click', function(e) {
 
@@ -46,25 +51,7 @@ function initialize() {
                 });
             }
         });
-
-
-        //placeMarker(e.latLng, map);
-        //saveToDatabase(e.latLng.lat(), e.latLng.lng());
-        //alert(e.latLng.lat());
     });
-}
-
-
-
-function facebookStatusCheckCallback(response, e) {
-    if(response.status != 'connected') {
-        // adicionar o botao do facebook login na modal pra facilitar
-        setModal('Aviso', 'Para poder marcar no mapa, é necessário se logar usando o Facebook.');
-        // ativa o modal bootstrap
-        $('#myModal').modal();
-    } else {  // connected, tenta salvar e retorna
-        saveToDatabase(e.latLng.lng(), e.latLng.lat());
-    }
 }
             
 function placeMarker(position, map) {
@@ -75,27 +62,13 @@ function placeMarker(position, map) {
     map.panTo(position);
 }
 
-function saveToDatabase(lng, lat) {
-    FB.api('/me', function(response) {
-        var username = response.email;
-        console.log('username   ' + username);
-     
-        $.post( "src/saveLocalization.php", { lng: lng, lat: lat, username: username } )
-        .done(function(data) {
-            setModal('Aviso', data.message);
-            $('#myModal').modal();
-        })
-        .fail(function() {
-            setModal('Erro', 'Ocorreu um erro durante a execução do script.');
-            $('#myModal').modal();
-        });
-    });
-}
-
-
 function setModal(title, message) {
     $("#myModal .modal-title").html(title);
     $("#myModal .modal-body").html(message);
+}
+
+function loadExistingMarkers() {
+
 }
 
 google.maps.event.addDomListener(window, 'load', initialize);
