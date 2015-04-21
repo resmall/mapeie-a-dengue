@@ -16,7 +16,8 @@ use OAuth\Common\Consumer\Credentials;
 
 
 // initialize
-$row['message'] = '';
+$return_message['message'] = '';
+$return_message['status'] = 'error';
 
 //tratar
 
@@ -31,15 +32,15 @@ $location = $location->getLocationObject($_POST['lng'], $_POST['lat']);
 
 
 if(is_null($location)) {
-    $row['message'] = "Dados incorretos";
+    $return_message['message'] = "Dados incorretos";
 } else {
 
     try {
         $mysqli = new mysqli("localhost", "homestead", "secret", "dengue");
 
         if (mysqli_connect_errno()) {
-            $row['message'] = "Houve uma falha na conexão, seguem detalhes.". mysqli_connect_error();
-            echo json_encode($row['message']);
+            $return_message['message'] = "Houve uma falha na conexão, seguem detalhes.". mysqli_connect_error();
+            echo json_encode($return_message['message']);
             exit();
         }
 
@@ -52,7 +53,7 @@ if(is_null($location)) {
     }
 
     if(!$result) {
-        $row['message'] = "Erro ao tentar: \n". $mysqli->error; //$mysqli->sqlstate;
+        $return_message['message'] = "Erro ao tentar: \n". $mysqli->error; //$mysqli->sqlstate;
 
     } elseif($result->num_rows < ALLOWED_MARKS_PER_USER ) {  // psr-2
         $result = $mysqli->query(
@@ -64,19 +65,20 @@ if(is_null($location)) {
         );
 
         if(!$result) {
-            $row['message'] = "Ocorreu uma falha durante o processo de gravação";
+            $return_message['message'] = "Ocorreu uma falha durante o processo de gravação";
         } else {
-            $row['message'] = 'Gravação realizada com sucesso.';
+            $return_message['message'] = 'Gravação realizada com sucesso.';
+            $return_message['status'] = 'success';
         }
     } else {
         // não pode gravar
-        $row['message'] = "Você adicionou o máximo de marcações possíveis para a sua conta.";
+        $return_message['message'] = "Você adicionou o máximo de marcações possíveis para a sua conta.";
     }
 }
 
-//echo htmlentities($row['_message']);
+//echo htmlentities($return_message['_message']);
 header('Content-Type: application/json');
-echo json_encode($row);
+echo json_encode($return_message);
 
 // verifica se a pessoa já marcou 3 spots
 // se marcou não pode marcar mais
