@@ -1,7 +1,5 @@
 <?php namespace App\Dengue\Validator;
 
-//use App\Dengue\Validator;
-
 class LocationValidator implements ValidatorInterface 
 {
 
