@@ -19,7 +19,6 @@ function initialize() {
     });
 
     google.maps.event.addListener(map, 'click', function(e) {
-
         // 1 - Verifica se o usuário está logado, se não, aborta tudo e pede pra logar
         // 2 - Se logado, tenta salvar no banco de dados e verifica se já 
         //     excedeu o limite de 3 marcadores
