@@ -1,6 +1,6 @@
 {
     "require": {
-        "lusitanian/oauth": "~0.3"
+        "hassankhan/config": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "4.6.*"

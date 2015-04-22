@@ -1,11 +1,21 @@
 <?php 
+require __DIR__ .'/../../vendor/autoload.php';
+use Noodlehaus\Config;
+
 // 1 - pegar todos os marcadores do banco de dados (ideal seria pegar só da área focada, não todos)
 // 2 - retornar um json com a posição dos marcadores
 $return_message['message'] = '';
-$return_message['status'] = '';
+$return_message['status'] = 'failed';
+
+// Iniciando objeto com as configurações no diretório.. e repetindo código de novo
+$config = new Config(__DIR__ . '/../../app/config');
 
 try {
-    $mysqli = new mysqli("localhost", "homestead", "secret", "dengue");
+    // que feio, estamos repetindo código
+    $mysqli = new mysqli($config->get('connections.mysql.host'), 
+                         $config->get('connections.mysql.username'), 
+                         $config->get('connections.mysql.password'), 
+                         $config->get('connections.mysql.database'));
 
     if (mysqli_connect_errno()) {
         $return_message['message'] = "Houve uma falha na conexão, seguem detalhes.". mysqli_connect_error();
@@ -13,7 +23,7 @@ try {
         exit();
     }
 
-    $result = $mysqli->query("SELECT * FROM dengue" );
+    $result = $mysqli->query("SELECT * FROM marcacoes" );
 } catch(mysqli_sql_exception $e) {
     throw $e; 
 }
