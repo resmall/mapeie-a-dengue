@@ -26,8 +26,13 @@ function initialize() {
     // Array que guarda todos os marcadores do mapa
     var markers = [];
     // objeto que detém os marcadores agrupados, se encarrega de agrupar e exibir
-    //var markerCluster;
     markerCluster = new MarkerClusterer(map);
+
+    // 1 - No início ou ao mover o mapa:
+    // 2 - obter as bordas do mapa, pra saber quais marcadores buscar
+    // 3 - buscar no banco os marcadores, que estão dentro das bordas do mapa
+    // 4 - Excluir os marcadores que estão fora da área de visualização.
+    //     Exemplo: deletar marcadores que estão fora da borda + 10%
 
     loadMarkers(markers, markerCluster, map );
 
@@ -48,19 +53,17 @@ function initialize() {
                         lat: e.latLng.lat(), 
                         username: response.email 
                     })
-                    .done(function(data) {
-                        setModal('Aviso', data.message);
-                        showModal();
-
+                    .done(function(data) {        
                         // independente da mensagem que for exibida, se deu certo, marcamos o mapa
                         if(data.status == 'success') {
-                            //placeMarker(e.latLng, map);
                             markerCluster.addMarker(new google.maps.Marker({
                                 position: e.latLng,
                                 map: map
                             }));
                             console.log("#2" + markerCluster);
                         }
+                        setModal('Aviso', data.message);
+                        showModal();
                     })
                     .fail(function() {
                         setModal('Erro', 'Ocorreu um erro durante a execução do script.');
