@@ -1,24 +1,8 @@
-var markermap = function (markers) {
-
-    return function(data) {
-        var obj = data; //JSON.parse(data);
-        for(var i = 0; i < obj.length; i++) {
-            var position = new google.maps.LatLng(obj[i].lat, obj[i].lng); //3 param bool
-
-            //placeMarker(position, map);
-            var marker = new google.maps.Marker({'position': position});
-            markers.push(marker);
-            console.log('Markcadores1' + markers[0]);
-        }
-    };
-};
-
-
 function initialize() {
     var mapOptions = {
         zoom: 15,
         center: new google.maps.LatLng(-28.2898836,-53.4998947),
-        disableDoubleClickZoom: true
+        disableDoubleClickZoom: true,
     };
 
     // objeto que detém a referência para o mapa exibido
@@ -27,12 +11,6 @@ function initialize() {
     var markers = [];
     // objeto que detém os marcadores agrupados, se encarrega de agrupar e exibir
     markerCluster = new MarkerClusterer(map);
-
-    // 1 - No início ou ao mover o mapa:
-    // 2 - obter as bordas do mapa, pra saber quais marcadores buscar
-    // 3 - buscar no banco os marcadores, que estão dentro das bordas do mapa
-    // 4 - Excluir os marcadores que estão fora da área de visualização.
-    //     Exemplo: deletar marcadores que estão fora da borda + 10%
 
     loadMarkers(markers, markerCluster, map );
 
@@ -73,6 +51,25 @@ function initialize() {
             }
         });
     });
+
+    // queremos que após arrastar o mapa os marcadores sejam carregados
+    google.maps.event.addListener(map, 'dragend', function(e) {
+        
+        // 1 - No início ou ao mover o mapa:
+        // 2 - obter as bordas do mapa, pra saber quais marcadores buscar
+        // 3 - buscar no banco os marcadores, que estão dentro das bordas do mapa
+        // 4 - Excluir os marcadores que estão fora da área de visualização.
+        //     Exemplo: deletar marcadores que estão fora da borda + 10%
+
+        //console.log("Bounds changed " + map.getBounds());
+        clearMarkersNotInView(map.getBounds(), markers);
+        
+    });
+
+    // queremos que quando o zoom mudar os marcadores também sejam alterados
+    google.maps.event.addListener(map, 'zoom_changed', function() {
+        google.maps.event.trigger(this, 'dragend');
+    });
 }
 
 function setModal(title, message) {
@@ -84,8 +81,12 @@ function showModal() {
     $('#myModal').modal();
 }
 
+/*
+ * Carrega todos os marcadores no mapa
+ */
 function loadMarkers(markers, markerCluster, map) {
     // recupera os marcadores e adiciona no mapa
+    console.log("Inicialização. Carregando marcadores...");
     $.post("src/getMarkers.php")
     .done(function(data) {
         var obj = data; //JSON.parse(data);
@@ -103,6 +104,29 @@ function loadMarkers(markers, markerCluster, map) {
     });
 
     console.log("#1" + markerCluster);
+}
+
+
+/*
+ * Remove os marcadores que não aparecem na view
+ */
+function clearMarkersNotInView(bounds, markers) {
+    var debug_count = 0;
+
+    for(var i = 0; i < markers.length; i++) {
+        if(!bounds.contains(markers[i].getPosition())) {
+            markers[i].setMap(null); // tira do mapa
+            markers.splice(i, 1); // tira do array
+            debug_count++;
+        }            
+    } 
+
+    // limpamos os marcadores
+    markerCluster.clearMarkers();
+    // adicionamos a lista de marcadores atualizada
+    markerCluster.addMarkers(markers);
+
+    console.log(debug_count + " itens removidos. " + markers.length + " restantes");
 }
 
 google.maps.event.addDomListener(window, 'load', initialize);
