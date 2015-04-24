@@ -49,7 +49,7 @@ if(is_null($location)) {
     if(!$result) {
         // Erro na consulta
         $return_message['message'] = "Erro na consulta: \n". $mysqli->error; //$mysqli->sqlstate;
-    } elseif($result->num_rows < ALLOWED_MARKS_PER_USER ) {  // psr-2
+    } elseif( true /*$result->num_rows < ALLOWED_MARKS_PER_USER*/ ) {  // psr-2
         // Se o usuário não marcou o máximo permitido, faz a gravação
         $result = $mysqli->query(
             "INSERT INTO marcacoes (username, lng, lat) 
