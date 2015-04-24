@@ -20,25 +20,14 @@ function initialize() {
         center: new google.maps.LatLng(-28.2898836,-53.4998947)
     };
 
+    // objeto que detém a referência para o mapa exibido
     var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+    // Array que guarda todos os marcadores do mapa
     var markers = [];
+    // objeto que detém os marcadores agrupados, se encarrega de agrupar e exibir
     var markerCluster;
 
-    // recupera os marcadores e adiciona no mapa
-    $.post("src/getMarkers.php")
-    .done(function(data) {
-        var obj = data; //JSON.parse(data);
-        for(var i = 0; i < obj.length; i++) {
-            var position = new google.maps.LatLng(obj[i].lat, obj[i].lng); //3 param bool
-            //placeMarker(position, map);
-            var marker = new google.maps.Marker({'position': position});
-            markers.push(marker);
-        }
-        markerCluster = new MarkerClusterer(map, markers);
-    })
-    .fail(function() {
-        alert("error");
-    });
+    loadMarkers(markers, markerCluster, map );
 
     // adiciona o listenter do click no map-canvas
     google.maps.event.addListener(map, 'click', function(e) {
@@ -87,6 +76,24 @@ function setModal(title, message) {
 
 function showModal() {
     $('#myModal').modal();
+}
+
+function loadMarkers(markers, markerCluster, map) {
+    // recupera os marcadores e adiciona no mapa
+    $.post("src/getMarkers.php")
+    .done(function(data) {
+        var obj = data; //JSON.parse(data);
+        for(var i = 0; i < obj.length; i++) {
+            var position = new google.maps.LatLng(obj[i].lat, obj[i].lng); //3 param bool
+            //placeMarker(position, map);
+            var marker = new google.maps.Marker({'position': position});
+            markers.push(marker);
+        }
+        markerCluster = new MarkerClusterer(map, markers);
+    })
+    .fail(function() {
+        alert("error");
+    });
 }
 
 google.maps.event.addDomListener(window, 'load', initialize);
