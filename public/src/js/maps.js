@@ -17,7 +17,8 @@ var markermap = function (markers) {
 function initialize() {
     var mapOptions = {
         zoom: 15,
-        center: new google.maps.LatLng(-28.2898836,-53.4998947)
+        center: new google.maps.LatLng(-28.2898836,-53.4998947),
+        disableDoubleClickZoom: true
     };
 
     // objeto que detém a referência para o mapa exibido
@@ -25,12 +26,13 @@ function initialize() {
     // Array que guarda todos os marcadores do mapa
     var markers = [];
     // objeto que detém os marcadores agrupados, se encarrega de agrupar e exibir
-    var markerCluster;
+    //var markerCluster;
+    markerCluster = new MarkerClusterer(map);
 
     loadMarkers(markers, markerCluster, map );
 
     // adiciona o listenter do click no map-canvas
-    google.maps.event.addListener(map, 'click', function(e) {
+    google.maps.event.addListener(map, 'dblclick', function(e) {
         // 1 - Verifica se o usuário está logado, se não, aborta tudo e pede pra logar
         // 2 - Se logado, tenta salvar no banco de dados e verifica se já 
         //     excedeu o limite de 3 marcadores
@@ -57,6 +59,7 @@ function initialize() {
                                 position: e.latLng,
                                 map: map
                             }));
+                            console.log("#2" + markerCluster);
                         }
                     })
                     .fail(function() {
@@ -85,15 +88,18 @@ function loadMarkers(markers, markerCluster, map) {
         var obj = data; //JSON.parse(data);
         for(var i = 0; i < obj.length; i++) {
             var position = new google.maps.LatLng(obj[i].lat, obj[i].lng); //3 param bool
-            //placeMarker(position, map);
-            var marker = new google.maps.Marker({'position': position});
-            markers.push(marker);
+            //var marker = new google.maps.Marker({'position': position});
+            markers.push(new google.maps.Marker({'position': position}));
         }
-        markerCluster = new MarkerClusterer(map, markers);
+        //markerCluster = new MarkerClusterer(map, markers);
+        markerCluster.addMarkers(markers);
+        console.log("#3" + markerCluster);
     })
     .fail(function() {
         alert("error");
     });
+
+    console.log("#1" + markerCluster);
 }
 
 google.maps.event.addDomListener(window, 'load', initialize);
