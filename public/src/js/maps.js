@@ -49,7 +49,7 @@ function initialize() {
         FB.getLoginStatus(function(response) {
             if(response.status != 'connected') {
                 setModal('Aviso', 'Para poder marcar no mapa, é necessário se logar usando o Facebook.');
-                $('#myModal').modal(); //chama modal
+                showModal();
             } else {  // connected, tenta salvar e retorna
                 FB.api('/me', function(response) {
                     $.post( "src/saveLocalization.php", { 
@@ -59,7 +59,7 @@ function initialize() {
                     })
                     .done(function(data) {
                         setModal('Aviso', data.message);
-                        $('#myModal').modal();
+                        showModal();
 
                         // independente da mensagem que for exibida, se deu certo, marcamos o mapa
                         if(data.status == 'success') {
@@ -72,7 +72,7 @@ function initialize() {
                     })
                     .fail(function() {
                         setModal('Erro', 'Ocorreu um erro durante a execução do script.');
-                        $('#myModal').modal();
+                        showModal();
                     });
                 });
             }
@@ -83,6 +83,10 @@ function initialize() {
 function setModal(title, message) {
     $("#myModal .modal-title").html(title);
     $("#myModal .modal-body").html(message);
+}
+
+function showModal() {
+    $('#myModal').modal();
 }
 
 google.maps.event.addDomListener(window, 'load', initialize);
