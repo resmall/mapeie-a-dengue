@@ -90,30 +90,6 @@ function showModal() {
 }
 
 /*
- * Carrega todos os marcadores no mapa
- *//*
-function loadAllMarkers(markers, markerCluster, map) {
-    // recupera os marcadores e adiciona no mapa
-    console.log("Inicialização. Carregando marcadores...");
-    $.post("src/getMarkers.php")
-    .done(function(data) {
-        var obj = data;
-        for(var i = 0; i < obj.length; i++) {
-            var position = new google.maps.LatLng(obj[i].lat, obj[i].lng); //3 param bool
-            markers.push(new google.maps.Marker({'position': position}));
-        }
-        markerCluster.addMarkers(markers);
-        console.log("#3" + markerCluster);
-    })
-    .fail(function() {
-        alert("error");
-    });
-
-    console.log("#1" + markerCluster);
-}*/
-
-
-/*
  * Remove os marcadores que não aparecem na view
  */
 function clearMarkersNotInView(bounds, markers) {
