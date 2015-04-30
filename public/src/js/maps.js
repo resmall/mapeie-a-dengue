@@ -11,6 +11,7 @@ function initialize() {
         zoom: 15,
         center: new google.maps.LatLng(-28.2898836,-53.4998947),
         disableDoubleClickZoom: true,
+        disableDefaultUI: true
     };
 
     // objeto que detém a referência para o mapa exibido
