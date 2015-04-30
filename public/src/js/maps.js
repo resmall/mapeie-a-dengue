@@ -1,3 +1,11 @@
+var map ;
+// Array que guarda todos os marcadores do mapa
+var markers = [];
+// array que guarda o id dos marcadores pra saber o que foi adicionado ou não
+var markerstable = [];
+// objeto que detém os marcadores agrupados, se encarrega de agrupar e exibir
+var markerCluster;
+
 function initialize() {
     var mapOptions = {
         zoom: 15,
@@ -6,13 +14,9 @@ function initialize() {
     };
 
     // objeto que detém a referência para o mapa exibido
-    var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-    // Array que guarda todos os marcadores do mapa
-    var markers = [];
+    map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
     // objeto que detém os marcadores agrupados, se encarrega de agrupar e exibir
     markerCluster = new MarkerClusterer(map);
-
-    loadMarkers(markers, markerCluster, map );
 
     // adiciona o listenter do click no map-canvas
     google.maps.event.addListener(map, 'dblclick', function(e) {
@@ -38,6 +42,7 @@ function initialize() {
                                 position: e.latLng,
                                 map: map
                             }));
+                            // TODO: pdoeria retornar o id criado pra atualizar a tabela
                             console.log("#2" + markerCluster);
                         }
                         setModal('Aviso', data.message);
@@ -52,18 +57,21 @@ function initialize() {
         });
     });
 
+    // depois q carregou, chamamos os inicializadores
+    google.maps.event.addListenerOnce(map, 'idle', function(){
+        getPositionsFromBounds(map);
+        
+    });
+
     // queremos que após arrastar o mapa os marcadores sejam carregados
     google.maps.event.addListener(map, 'dragend', function(e) {
-        
         // 1 - No início ou ao mover o mapa:
         // 2 - obter as bordas do mapa, pra saber quais marcadores buscar
         // 3 - buscar no banco os marcadores, que estão dentro das bordas do mapa
         // 4 - Excluir os marcadores que estão fora da área de visualização.
         //     Exemplo: deletar marcadores que estão fora da borda + 10%
-
-        //console.log("Bounds changed " + map.getBounds());
         clearMarkersNotInView(map.getBounds(), markers);
-        
+        getPositionsFromBounds(map);
     });
 
     // queremos que quando o zoom mudar os marcadores também sejam alterados
@@ -83,19 +91,17 @@ function showModal() {
 
 /*
  * Carrega todos os marcadores no mapa
- */
-function loadMarkers(markers, markerCluster, map) {
+ *//*
+function loadAllMarkers(markers, markerCluster, map) {
     // recupera os marcadores e adiciona no mapa
     console.log("Inicialização. Carregando marcadores...");
     $.post("src/getMarkers.php")
     .done(function(data) {
-        var obj = data; //JSON.parse(data);
+        var obj = data;
         for(var i = 0; i < obj.length; i++) {
             var position = new google.maps.LatLng(obj[i].lat, obj[i].lng); //3 param bool
-            //var marker = new google.maps.Marker({'position': position});
             markers.push(new google.maps.Marker({'position': position}));
         }
-        //markerCluster = new MarkerClusterer(map, markers);
         markerCluster.addMarkers(markers);
         console.log("#3" + markerCluster);
     })
@@ -104,7 +110,7 @@ function loadMarkers(markers, markerCluster, map) {
     });
 
     console.log("#1" + markerCluster);
-}
+}*/
 
 
 /*
@@ -117,16 +123,48 @@ function clearMarkersNotInView(bounds, markers) {
         if(!bounds.contains(markers[i].getPosition())) {
             markers[i].setMap(null); // tira do mapa
             markers.splice(i, 1); // tira do array
+            markerstable.splice(i,1);
             debug_count++;
         }            
     } 
 
     // limpamos os marcadores
     markerCluster.clearMarkers();
-    // adicionamos a lista de marcadores atualizada
-    markerCluster.addMarkers(markers);
-
     console.log(debug_count + " itens removidos. " + markers.length + " restantes");
+}
+
+/*
+ * Recupera as marcações de acordo com a posição da view
+ */
+function getPositionsFromBounds(map) {
+    var bounds = {
+        southwest_lat: map.getBounds().getSouthWest().lat(),
+        southwest_lng: map.getBounds().getSouthWest().lng(),
+        northeast_lat: map.getBounds().getNorthEast().lat(),
+        northeast_lng: map.getBounds().getNorthEast().lng()
+    };
+
+    $.post("src/getMarkers.php", bounds)
+    .done(function(data) {
+        for(var i = 0; i < data.length; i++) {
+            // verifica se o id ja existe, se existir nao add novamente
+            if(markerstable.indexOf(data[i].id) == -1) {
+                var position = new google.maps.LatLng(data[i].lat, data[i].lng); //3 param bool
+                markers.push(new google.maps.Marker({'position': position}));
+                markerstable.push(data[i].id);
+            } 
+        }
+        console.log("Marcadors: " + markers.length + " ID Guardados: " + markerstable.length);
+        updateMarkerCluster(markers);
+    })
+    .fail(function() {
+        console.log("Abort, shit detected!");
+    });
+}
+
+function updateMarkerCluster() {
+    markerCluster.addMarkers(markers);
+    console.log("Marcadores atualizados");
 }
 
 google.maps.event.addDomListener(window, 'load', initialize);

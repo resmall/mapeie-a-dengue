@@ -7,6 +7,12 @@ use Noodlehaus\Config;
 $return_message['message'] = '';
 $return_message['status'] = 'failed';
 
+
+$slat = $_POST['southwest_lat'];
+$slng = $_POST['southwest_lng'];
+$nlat = $_POST['northeast_lat'];
+$nlng = $_POST['northeast_lng'];
+
 // Iniciando objeto com as configurações no diretório.. e repetindo código de novo
 $config = new Config(__DIR__ . '/../../app/config');
 
@@ -22,8 +28,11 @@ try {
         echo json_encode($return_message['message']);
         exit();
     }
-
-    $result = $mysqli->query("SELECT * FROM marcacoes" );
+//lat lng
+    //$result = $mysqli->query("SELECT * FROM marcacoes" );
+    $result = $mysqli->query("SELECT * FROM marcacoes 
+                             WHERE lat > ". $slat ." AND lat < ". $nlat ." AND lng > ". $slng ." AND lng < ". $nlng
+                              );
 } catch(mysqli_sql_exception $e) {
     throw $e; 
 }
@@ -37,3 +46,10 @@ if(!$result) {
 }
 
 echo json_encode($return_message);
+
+
+
+
+//if from Google: ( (a, b), (c, d) )
+
+//SELECT * FROM tilistings WHERE lat > a AND lat < c AND lng > b AND lng < d
