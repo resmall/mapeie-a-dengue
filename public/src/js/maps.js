@@ -27,9 +27,11 @@ function initialize() {
         // 3 - Se conseguiu salvar no banco de dados, adiciona o marcador e mensagem de sucesso.
         FB.getLoginStatus(function(response) {
             if(response.status != 'connected') {
+                showFacebookControls(true); // se não autorizado ou não logado, fornecemos o botão
                 setModal('Aviso', 'Para poder marcar no mapa, é necessário se logar usando o Facebook.');
                 showModal();
             } else {  // connected, tenta salvar e retorna
+                showFacebookControls(false);
                 FB.api('/me', function(response) {
                     $.post( "src/saveLocalization.php", { 
                         lng: e.latLng.lng(), 
